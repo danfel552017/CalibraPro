@@ -357,4 +357,4 @@ Para soporte técnico o consultas sobre funcionalidades, contacta al equipo de d
 
 ---
 
-*CalibraPro v1.0 - Desarrollado para Nubank Quality Team*
+*CalibraPro v1.0 - Desarrollado para Nubank Quality Team*# 🌐 CalibraPro ya está desplegado en: https://calibrapro.vercel.app
