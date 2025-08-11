@@ -5,10 +5,15 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Chrome, Shield, Users, BarChart3 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Shield, Users, BarChart3, Lock, User } from 'lucide-react'
 
 export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const router = useRouter()
 
   useEffect(() => {
@@ -20,29 +25,30 @@ export default function SignIn() {
     })
   }, [router])
 
-  const handleSignIn = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     setIsLoading(true)
+    setError('')
+    
     try {
-      await signIn('google', { callbackUrl: '/dashboard' })
+      const result = await signIn('credentials', {
+        username,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError('Usuario o contraseña incorrectos')
+      } else {
+        router.push('/dashboard')
+      }
     } catch (error) {
       console.error('Error signing in:', error)
+      setError('Error al iniciar sesión')
     }
+    
     setIsLoading(false)
   }
-
-  const handleDemoSignIn = async () => {
-    setIsLoading(true)
-    try {
-      await signIn('demo', { callbackUrl: '/dashboard' })
-    } catch (error) {
-      console.error('Error signing in with demo:', error)
-    }
-    setIsLoading(false)
-  }
-
-  // Verificar si estamos en modo demo
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || 
-                    typeof window !== 'undefined' && window.location.search.includes('demo=true')
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-nubank-purple/10 via-background to-nubank-purple-light/10 p-4">
@@ -87,10 +93,10 @@ export default function SignIn() {
             </div>
             
             <div className="flex items-center space-x-3 p-4 rounded-lg bg-card border">
-              <Chrome className="w-6 h-6 text-nubank-purple" />
+              <Lock className="w-6 h-6 text-nubank-purple" />
               <div>
-                <p className="font-medium">Google Workspace</p>
-                <p className="text-xs text-muted-foreground">Integración nativa completa</p>
+                <p className="font-medium">Acceso Seguro</p>
+                <p className="text-xs text-muted-foreground">Autenticación local protegida</p>
               </div>
             </div>
           </div>
@@ -101,63 +107,74 @@ export default function SignIn() {
           <CardHeader className="text-center">
             <CardTitle>Acceso al Sistema</CardTitle>
             <CardDescription>
-              Inicia sesión con tu cuenta de Nubank para continuar
+              Ingresa tus credenciales para acceder a CalibraPro
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Botón de Demo Mode - siempre visible */}
-            <Button 
-              onClick={handleDemoSignIn}
-              disabled={isLoading}
-              variant="outline"
-              size="lg"
-              className="w-full border-2 border-nubank-purple hover:bg-nubank-purple hover:text-white"
-            >
-              {isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="spinner w-4 h-4"></div>
-                  <span>Conectando...</span>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">Usuario</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Nombre de usuario"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="pl-10"
+                    required
+                  />
                 </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <Shield className="w-5 h-5" />
-                  <span>🎭 Entrar como Demo</span>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10"
+                    required
+                  />
                 </div>
-              )}
-            </Button>
+              </div>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">o</span>
-              </div>
-            </div>
-            
-            <Button 
-              onClick={handleSignIn}
-              disabled={isLoading}
-              variant="nubank"
-              size="lg"
-              className="w-full"
-            >
-              {isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="spinner w-4 h-4"></div>
-                  <span>Conectando...</span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <Chrome className="w-5 h-5" />
-                  <span>Continuar con Google</span>
-                </div>
+              {error && (
+                <div className="text-red-500 text-sm text-center">{error}</div>
               )}
-            </Button>
+              
+              <Button 
+                type="submit"
+                disabled={isLoading}
+                variant="nubank"
+                size="lg"
+                className="w-full"
+              >
+                {isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="spinner w-4 h-4"></div>
+                    <span>Iniciando sesión...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Shield className="w-5 h-5" />
+                    <span>Iniciar Sesión</span>
+                  </div>
+                )}
+              </Button>
+            </form>
             
-            <div className="text-center text-xs text-muted-foreground space-y-2">
-              <p className="text-nubank-purple font-medium">🎭 Demo Mode: Explora todas las funcionalidades sin credenciales</p>
-              <p>Solo usuarios con email @nubank.com.br pueden acceder al modo producción</p>
+            <div className="mt-6 text-center text-xs text-muted-foreground space-y-2">
+              <div className="p-3 bg-nubank-purple/10 rounded-lg border">
+                <p className="text-nubank-purple font-medium">📋 Credenciales de Administrador:</p>
+                <p className="font-mono text-xs mt-1">Usuario: <span className="font-bold">admin_calibrapro</span></p>
+                <p className="font-mono text-xs">Contraseña: <span className="font-bold">CalibraPro2024!Admin</span></p>
+              </div>
               <p>Al continuar, aceptas los términos de uso internos</p>
             </div>
           </CardContent>

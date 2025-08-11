@@ -1,82 +1,107 @@
 import { NextAuthOptions } from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { User } from '@/types';
+import bcrypt from 'bcryptjs';
 
-// Verificar si estamos en modo demo
-const isDemoMode = process.env.DEMO_MODE === 'true';
+// Base de datos de usuarios (en producción esto vendría de una base de datos real)
+interface UserCredentials {
+  username: string;
+  password: string; // Hash de la contraseña
+  email: string;
+  name: string;
+  role: 'Admin' | 'Analista' | 'Lider';
+}
 
-// Lista de administradores (desde variable de entorno)
-function getAdminEmails(): string[] {
-  const adminEmails = process.env.ADMIN_EMAILS;
-  return adminEmails ? adminEmails.split(',').map(email => email.trim()) : [];
+// Usuario administrador maestro
+const MASTER_ADMIN_USERNAME = 'admin_calibrapro';
+const MASTER_ADMIN_PASSWORD = 'CalibraPro2024!Admin';
+const MASTER_ADMIN_EMAIL = 'admin@calibrapro.nubank.com.br';
+
+// Hash de la contraseña del administrador maestro (generado con bcrypt)
+const MASTER_ADMIN_PASSWORD_HASH = bcrypt.hashSync(MASTER_ADMIN_PASSWORD, 12);
+
+// Base de datos de usuarios en memoria (en producción esto sería una BD real)
+const USERS_DB: UserCredentials[] = [
+  {
+    username: MASTER_ADMIN_USERNAME,
+    password: MASTER_ADMIN_PASSWORD_HASH,
+    email: MASTER_ADMIN_EMAIL,
+    name: 'Administrador Maestro',
+    role: 'Admin'
+  },
+  // Aquí se pueden agregar más usuarios
+  {
+    username: 'analista_demo',
+    password: bcrypt.hashSync('demo123', 12),
+    email: 'analista@calibrapro.nubank.com.br',
+    name: 'Analista Demo',
+    role: 'Analista'
+  },
+  {
+    username: 'lider_demo',
+    password: bcrypt.hashSync('demo123', 12),
+    email: 'lider@calibrapro.nubank.com.br',
+    name: 'Líder Demo',
+    role: 'Lider'
+  }
+];
+
+// Función para buscar usuario por username
+function findUser(username: string): UserCredentials | undefined {
+  return USERS_DB.find(user => user.username === username);
+}
+
+// Función para verificar contraseña
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
 }
 
 // Determinar rol del usuario
 function getUserRole(email: string): 'Admin' | 'Analista' | 'Lider' {
-  const adminEmails = getAdminEmails();
-  
-  if (adminEmails.includes(email)) {
-    return 'Admin';
-  }
-  
-  // Por ahora, todos los no-admin son Analistas
-  // En el futuro se puede implementar lógica más compleja
-  return 'Analista';
+  const user = USERS_DB.find(u => u.email === email);
+  return user?.role || 'Analista';
 }
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    // Provider demo para desarrollo sin credenciales
-    ...(isDemoMode ? [
-      CredentialsProvider({
-        id: 'demo',
-        name: 'Demo Login',
-        credentials: {},
-        async authorize() {
-          return {
-            id: 'demo-user',
-            email: process.env.DEMO_USER_EMAIL || 'demo@nubank.com.br',
-            name: process.env.DEMO_USER_NAME || 'Usuario Demo',
-            image: 'https://ui-avatars.com/api/?name=Demo+User&background=8A2BE2&color=fff'
-          };
-        },
-      })
-    ] : []),
-    // Provider Google para producción
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: 'openid email profile https://www.googleapis.com/auth/spreadsheets',
-        },
+    CredentialsProvider({
+      id: 'credentials',
+      name: 'CalibraPro Login',
+      credentials: {
+        username: { label: 'Usuario', type: 'text', placeholder: 'Nombre de usuario' },
+        password: { label: 'Contraseña', type: 'password' }
       },
-    }),
+      async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) {
+          return null;
+        }
+
+        const user = findUser(credentials.username);
+        if (!user) {
+          return null;
+        }
+
+        const isValidPassword = await verifyPassword(credentials.password, user.password);
+        if (!isValidPassword) {
+          return null;
+        }
+
+        return {
+          id: user.username,
+          email: user.email,
+          name: user.name,
+          image: `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=8A2BE2&color=fff`
+        };
+      },
+    })
   ],
   callbacks: {
-    async signIn({ user, account }) {
-      // En modo demo, permitir acceso siempre
-      if (isDemoMode && account?.provider === 'demo') {
-        return true;
-      }
-      
-      // Verificar que es un usuario de Nubank
-      if (user.email && user.email.endsWith('@nubank.com.br')) {
-        return true;
-      }
-      
-      // Rechazar usuarios que no sean de Nubank
-      return false;
+    async signIn({ user }) {
+      // Permitir acceso a todos los usuarios autenticados con credenciales válidas
+      return true;
     },
-    async jwt({ token, account, user }) {
-      // Guardar tokens de acceso para usar con Google Sheets API
-      if (account) {
-        token.access_token = account.access_token;
-        token.refresh_token = account.refresh_token;
-      }
-      
-      // Agregar rol del usuario
+    async jwt({ token, user }) {
+      // Agregar rol del usuario al token
       if (user?.email) {
         token.role = getUserRole(user.email);
       }
@@ -88,10 +113,6 @@ export const authOptions: NextAuthOptions = {
       if (session.user?.email) {
         (session.user as User).role = token.role as 'Admin' | 'Analista' | 'Lider';
       }
-      
-      // Incluir tokens para API calls
-      (session as any).access_token = token.access_token;
-      (session as any).refresh_token = token.refresh_token;
       
       return session;
     },
@@ -144,3 +165,43 @@ export function requireAdmin(handler: any) {
 
 // Import necesario que faltaba
 import { getServerSession } from 'next-auth/next';
+
+// Exportar credenciales del administrador maestro (para mostrar al usuario)
+export const MASTER_ADMIN_CREDENTIALS = {
+  username: MASTER_ADMIN_USERNAME,
+  password: MASTER_ADMIN_PASSWORD,
+  email: MASTER_ADMIN_EMAIL
+};
+
+// Función para agregar un nuevo usuario (solo para administradores)
+export function addUser(userData: {
+  username: string;
+  password: string;
+  email: string;
+  name: string;
+  role: 'Admin' | 'Analista' | 'Lider';
+}): boolean {
+  // Verificar si el usuario ya existe
+  if (findUser(userData.username)) {
+    return false;
+  }
+
+  // Hash de la contraseña
+  const hashedPassword = bcrypt.hashSync(userData.password, 12);
+
+  // Agregar usuario a la base de datos
+  USERS_DB.push({
+    username: userData.username,
+    password: hashedPassword,
+    email: userData.email,
+    name: userData.name,
+    role: userData.role
+  });
+
+  return true;
+}
+
+// Función para obtener todos los usuarios (sin contraseñas)
+export function getAllUsers(): Omit<UserCredentials, 'password'>[] {
+  return USERS_DB.map(({ password, ...user }) => user);
+}

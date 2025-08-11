@@ -1,230 +1,158 @@
-# CalibraPro - Plataforma de Calibración de Calidad Nubank
+# 🚀 CalibraPro v1.0 - Producción
 
-## 🎯 Visión del Proyecto
+**Plataforma para Gestión de Calibraciones de Calidad**
 
-**CalibraPro** es una plataforma web interna de vanguardia diseñada específicamente para el equipo de Calidad de Nubank. Su objetivo es transformar un proceso manual y fragmentado en un ecosistema digital centralizado, intuitivo y data-driven que abarca todo el ciclo de vida de la calidad: desde la creación de scorecards hasta la ejecución de calibraciones y el seguimiento de mejoras.
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black)](https://calibrapro.vercel.app)
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue)](https://github.com/danfel552017/CalibraPro)
+[![Status](https://img.shields.io/badge/Status-Production-green)](https://calibrapro.vercel.app)
 
-### 🔬 Metodología de Calibración
+## 🌐 Acceso Directo
 
-La plataforma implementa una metodología de calibración basada en el **Coeficiente Kappa de Cohen**, que es el estándar de la industria para medir la concordancia entre evaluadores en procesos de control de calidad. Este coeficiente proporciona una medida estadísticamente robusta del nivel de acuerdo entre analistas, corrigiendo por el acuerdo esperado por azar.
+**URL de Producción:** [https://calibrapro.vercel.app](https://calibrapro.vercel.app)
 
-**Interpretación del Kappa:**
-- 0.81-1.00: Acuerdo Casi Perfecto
-- 0.61-0.80: Acuerdo Sustancial  
-- 0.41-0.60: Acuerdo Moderado
-- 0.21-0.40: Acuerdo Justo
-- 0.01-0.20: Acuerdo Ligero
-- ≤0.00: Acuerdo Pobre
+### 🔐 Credenciales de Administrador Maestro
 
-### 🏗️ Arquitectura Tecnológica
-
-**Frontend:**
-- Next.js 14 con App Router
-- TypeScript para type safety
-- Tailwind CSS + Shadcn/ui para diseño moderno
-- NextAuth.js para autenticación con Google
-
-**Backend:**
-- Next.js API Routes (Full-stack)
-- Google Sheets API como base de datos
-- Google OAuth para autenticación
-
-**Despliegue:**
-- Vercel (recomendado para Next.js)
-- Variables de entorno para configuración
-
-## 📚 Guía del Administrador
-
-### Gestión de Scorecards
-
-Los administradores pueden crear, editar y gestionar scorecards que definen los criterios de evaluación.
-
-#### Crear un Nuevo Scorecard
-
-1. **Acceder al módulo:** Navega a "Scorecards" en el menú lateral
-2. **Iniciar creación:** Haz clic en "Nuevo Scorecard"
-3. **Completar información básica:**
-   - **Nombre:** Identificador único del scorecard
-   - **Descripción:** Propósito y contexto de uso
-
-4. **Configurar preguntas por sección:**
-   - Organiza preguntas en secciones lógicas
-   - Define el tipo de error (Crítico/No Crítico)
-   - Incluye guías de aplicación detalladas
-
-#### Lógica COPC + Errores Críticos
-
-⚠️ **Importante:** Cualquier pregunta marcada como "Crítica" con calificación 0 anula automáticamente toda la evaluación (resultado final = 0%).
-
-#### Clonar Scorecards
-
-Para agilizar la creación de nuevos scorecards basados en existentes:
-1. Selecciona el scorecard base
-2. Usa la opción "Clonar"
-3. Modifica según necesidades específicas
-
-### Configuración del Sistema
-
-#### Variables de Entorno Requeridas
-
-```env
-# Next.js Configuration
-NEXTAUTH_URL=https://tu-dominio.com
-NEXTAUTH_SECRET=tu-clave-secreta-super-segura
-
-# Google OAuth
-GOOGLE_CLIENT_ID=tu-google-client-id
-GOOGLE_CLIENT_SECRET=tu-google-client-secret
-
-# Google Sheets
-GOOGLE_SHEETS_ID=tu-google-sheets-id
-GOOGLE_SERVICE_ACCOUNT_EMAIL=service-account@project.iam.gserviceaccount.com
-GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nTU_PRIVATE_KEY\n-----END PRIVATE KEY-----\n"
-
-# Administradores
-ADMIN_EMAILS=admin1@nubank.com.br,admin2@nubank.com.br
+```
+Usuario: admin_calibrapro
+Contraseña: CalibraPro2024!Admin
+Rol: Administrador
 ```
 
-#### Configuración de Google Sheets
+### 👥 Usuarios Demo Disponibles
 
-1. **Crear Google Sheet:** Crea una nueva hoja de cálculo en Google Drive
-2. **Configurar Service Account:** 
-   - Ve a Google Cloud Console
-   - Crea un Service Account
-   - Genera clave privada JSON
-   - Comparte la hoja con el email del Service Account
+```
+🔧 Administrador:
+   Usuario: admin_calibrapro
+   Contraseña: CalibraPro2024!Admin
 
-3. **Estructura automática:** La aplicación creará automáticamente las siguientes pestañas:
-   - `Scorecards_Maestros`
-   - `Banco_Preguntas`
-   - `Sesiones_Calibracion`
-   - `Resultados_Detallados`
-   - `Planes_Accion`
+👤 Analista Demo:
+   Usuario: analista_demo  
+   Contraseña: demo123
 
-## 👥 Guía del Usuario
+👨‍💼 Líder Demo:
+   Usuario: lider_demo
+   Contraseña: demo123
+```
 
-### Participar en Sesiones de Calibración
+---
 
-#### Como Participante (Analista)
+## 📋 Descripción
 
-1. **Recibir invitación:** Los líderes te invitarán a sesiones específicas
-2. **Acceder a la sesión:** Ve a "Mis Sesiones" y selecciona la sesión activa
-3. **Realizar evaluación ciega:**
-   - Lee cuidadosamente cada pregunta
-   - Consulta las guías de aplicación si es necesario
-   - Califica binariamente (0 = No cumple, 1 = Cumple)
-   - **⚠️ Importante:** No puedes cambiar respuestas una vez enviadas
+CalibraPro v1.0 es una aplicación web diseñada para gestionar sesiones de calibración de calidad, permitiendo:
 
-4. **Enviar resultados:** Confirma y envía tu evaluación
+- **Gestión de Scorecards:** Crear y administrar plantillas de evaluación
+- **Sesiones de Calibración:** Evaluaciones ciegas colaborativas entre analistas
+- **Análisis Kappa:** Métricas automáticas de concordancia entre evaluadores
+- **Planes de Acción:** Seguimiento de tareas derivadas de sesiones
+- **Sistema de Usuarios:** Autenticación local con roles (Admin/Analista/Líder)
 
-#### Como Líder de Sesión
+## 🔧 Tecnologías
 
-1. **Crear nueva sesión:**
-   - Selecciona el scorecard a usar
-   - Define la interacción a evaluar
-   - Invita a los participantes
+- **Frontend:** Next.js 14, React 18, TypeScript
+- **Autenticación:** NextAuth.js con credenciales locales
+- **UI:** Tailwind CSS, Radix UI, Lucide Icons
+- **Base de Datos:** Google Sheets (como backend)
+- **Deployment:** Vercel
 
-2. **Gestionar la sesión:**
-   - Monitorea el progreso de participantes
-   - Finaliza cuando todos hayan completado
-   - Revisa los resultados y métricas Kappa
+## 🚀 Instalación Local
 
-3. **Analizar resultados:**
-   - Revisa discrepancias entre evaluadores
-   - Identifica áreas de mejora
-   - Crea planes de acción según necesidad
+### Prerrequisitos
 
-### Gestión de Planes de Acción
+- Node.js 18+
+- npm o yarn
+- Cuenta Google Cloud (para Google Sheets API)
 
-#### Crear Tareas
-
-1. Después de una sesión finalizada, identifica oportunidades de mejora
-2. Crea tareas específicas con:
-   - Descripción clara del objetivo
-   - Responsable asignado
-   - Fecha de vencimiento realista
-
-#### Seguimiento
-
-- **Dashboard:** Visualiza todas tus tareas pendientes
-- **Estados:** Pendiente → En Progreso → Completado
-- **Notificaciones:** Recibe alertas de tareas próximas a vencer
-
-## 🔧 Guía Técnica
-
-### Prerrequisitos de Software
-
-- **Node.js 18+** (recomendado: usar nvm)
-- **npm o yarn** para gestión de paquetes
-- **Cuenta Google Cloud** con APIs habilitadas
-- **Google Workspace** para autenticación
-
-### Configuración del Entorno de Desarrollo
-
-#### 1. Clonar y Configurar
+### Pasos de Instalación
 
 ```bash
-# Clonar el repositorio
-git clone <repository-url>
+# 1. Clonar el repositorio
+git clone https://github.com/danfel552017/CalibraPro.git
 cd CalibraPro
 
-# Instalar dependencias
+# 2. Instalar dependencias
 npm install
 
-# Copiar variables de entorno
+# 3. Configurar variables de entorno
 cp .env.example .env
-```
+# Editar .env con tus configuraciones
 
-#### 2. Configurar Google Cloud
-
-**Habilitar APIs:**
-```bash
-# Google Cloud Console → APIs & Services → Enable APIs
-- Google Sheets API
-- Google Drive API  
-- Google OAuth2 API
-```
-
-**Crear OAuth Client:**
-1. Google Cloud Console → Credentials → Create Credentials → OAuth Client ID
-2. Application Type: Web Application
-3. Authorized redirect URIs: `http://localhost:3000/api/auth/callback/google`
-
-**Crear Service Account:**
-1. Google Cloud Console → IAM & Admin → Service Accounts
-2. Create Service Account
-3. Download JSON key file
-4. Extract email and private key para `.env`
-
-#### 3. Configurar Google Sheet
-
-```bash
-# Crear nueva hoja de cálculo
-# Copiar ID de la URL: docs.google.com/spreadsheets/d/{SHEET_ID}/edit
-# Compartir con Service Account email (Editor permissions)
-```
-
-#### 4. Variables de Entorno
-
-Completa el archivo `.env` con todos los valores requeridos según el ejemplo anterior.
-
-### Comandos de Desarrollo
-
-```bash
-# Ejecutar en modo desarrollo
+# 4. Ejecutar en modo desarrollo
 npm run dev
 
-# Verificar tipos TypeScript
-npm run type-check
+# 5. Abrir en el navegador
+# http://localhost:3000
+```
 
-# Linting
-npm run lint
+### Variables de Entorno Requeridas
+
+```env
+# Next.js
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=tu-secret-key
+
+# Google Sheets API
+GOOGLE_SHEET_ID=tu-google-sheets-id
+GOOGLE_SERVICE_ACCOUNT_EMAIL=service-account@project.iam.gserviceaccount.com
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nTU_PRIVATE_KEY\n-----END PRIVATE KEY-----\n"
+```
+
+## 👥 Gestión de Usuarios
+
+### Agregar Nuevos Usuarios
+
+Solo los administradores pueden crear nuevos usuarios. Accede con las credenciales de administrador y ve a la sección de configuración.
+
+### Roles Disponibles
+
+- **Admin:** Acceso completo, gestión de usuarios, configuración del sistema
+- **Lider:** Puede crear y liderar sesiones de calibración
+- **Analista:** Puede participar en sesiones como evaluador
+
+## 📊 Funcionalidades Principales
+
+### 1. Gestión de Scorecards
+- Crear plantillas de evaluación personalizadas
+- Organizar preguntas por secciones
+- Definir tipos de error (Crítico/No Crítico)
+- Agregar guías de aplicación
+
+### 2. Sesiones de Calibración
+- Evaluación ciega entre múltiples analistas
+- Calificación binaria (0=No cumple, 1=Cumple)
+- Cálculo automático de métricas Kappa
+- Análisis de discrepancias entre evaluadores
+
+### 3. Planes de Acción
+- Crear tareas derivadas de sesiones
+- Asignar responsables y fechas límite
+- Seguimiento de estado (Pendiente/En Progreso/Completado)
+- Dashboard de tareas personales
+
+### 4. Analytics y Reportes
+- Métricas de concordancia entre evaluadores
+- Identificación de preguntas problemáticas
+- Análisis de tendencias por analista
+- Exportación de resultados
+
+## 🛠️ Desarrollo
+
+### Comandos Disponibles
+
+```bash
+# Desarrollo
+npm run dev
 
 # Build para producción
 npm run build
 
-# Ejecutar versión de producción
+# Iniciar versión de producción
 npm run start
+
+# Linting
+npm run lint
+
+# Verificación de tipos
+npm run type-check
 ```
 
 ### Estructura del Proyecto
@@ -237,20 +165,33 @@ CalibraPro/
 │   ├── dashboard/         # Dashboard principal
 │   └── globals.css        # Estilos globales
 ├── components/            # Componentes React
-│   ├── layout/           # Layout components
+│   ├── layout/           # Components de layout
 │   └── ui/               # UI components (Shadcn)
 ├── lib/                  # Utilidades y servicios
-│   ├── services/         # Lógica de negocio
+│   ├── auth.ts           # Sistema de autenticación
 │   ├── google-sheets.ts  # Cliente Google Sheets
-│   ├── kappa-calculator.ts # Cálculos estadísticos
-│   └── auth.ts           # Configuración NextAuth
+│   └── kappa-calculator.ts # Cálculos estadísticos
 ├── types/                # Definiciones TypeScript
 └── README.md             # Esta documentación
 ```
 
-### Despliegue a Producción
+## 🔐 Seguridad
 
-#### Opción 1: Vercel (Recomendado)
+- **Autenticación:** Sistema local con contraseñas hasheadas (bcrypt)
+- **Autorización:** Control de acceso basado en roles
+- **Sesiones:** JWT con NextAuth.js
+- **Variables de Entorno:** Configuración sensible protegida
+
+## 📈 Performance
+
+- **SSR/SSG:** Optimización con Next.js
+- **Lazy Loading:** Carga bajo demanda de componentes
+- **Caching:** Estrategias de cache para datos estáticos
+- **Bundle Size:** Optimización automática de JavaScript
+
+## 🌐 Despliegue
+
+### Vercel (Recomendado)
 
 ```bash
 # Instalar Vercel CLI
@@ -260,101 +201,63 @@ npm i -g vercel
 vercel
 
 # Configurar variables de entorno en dashboard de Vercel
-# Configurar dominio custom si es necesario
 ```
 
-#### Opción 2: Docker
+### Variables de Entorno en Producción
 
-```dockerfile
-# Dockerfile
-FROM node:18-alpine
+1. Ir al dashboard de Vercel
+2. Seleccionar el proyecto CalibraPro
+3. Settings → Environment Variables
+4. Agregar todas las variables requeridas
 
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
+## 🐛 Troubleshooting
 
-COPY . .
-RUN npm run build
+### Problemas Comunes
 
-EXPOSE 3000
-CMD ["npm", "start"]
-```
+**Error de autenticación:**
+- Verificar que las credenciales sean correctas
+- Revisar que NEXTAUTH_SECRET esté configurado
+- Comprobar que NEXTAUTH_URL apunte al dominio correcto
 
-#### Consideraciones de Seguridad
+**Error de Google Sheets:**
+- Verificar que GOOGLE_SHEET_ID sea correcto
+- Comprobar permisos del Service Account
+- Validar formato de GOOGLE_PRIVATE_KEY
 
-- **Variables de entorno:** Nunca commitear claves en el repositorio
-- **Service Account:** Usar principio de menor privilegio
-- **HTTPS:** Obligatorio en producción
-- **CORS:** Configurar dominios permitidos
-- **Validación:** Implementar validación robusta en APIs
-
-### Monitoreo y Logging
-
-```typescript
-// Ejemplo de logging estructurado
-console.log(JSON.stringify({
-  timestamp: new Date().toISOString(),
-  level: 'info',
-  message: 'Session created successfully',
-  sessionId: session.id_sesion,
-  userId: user.email
-}))
-```
-
-### Backup y Recuperación
-
-**Google Sheets como DB:**
-- ✅ Backup automático por Google
-- ✅ Historial de versiones
-- ✅ Acceso desde múltiples interfaces
-- ⚠️ Considerar rate limits para uso intensivo
-
-### Troubleshooting Común
-
-**Error: "GOOGLE_SHEETS_ID not configured"**
+**Error en desarrollo:**
 ```bash
-# Verificar que la variable esté en .env
-echo $GOOGLE_SHEETS_ID
-
-# Reiniciar servidor de desarrollo
+rm -rf .next
 npm run dev
 ```
 
-**Error de autenticación Google:**
-```bash
-# Verificar que las URIs de redirect estén correctas
-# Local: http://localhost:3000/api/auth/callback/google
-# Prod: https://tu-dominio.com/api/auth/callback/google
-```
-
-**Error de permisos en Google Sheets:**
-```bash
-# Verificar que Service Account tenga acceso a la hoja
-# Compartir hoja → Agregar email del Service Account → Editor
-```
-
-### Performance y Optimización
-
-- **Caching:** Next.js ISR para datos estáticos
-- **Lazy Loading:** Componentes y rutas
-- **Optimización de imágenes:** Next.js Image component
-- **Bundle Analysis:** `npm run build && npx @next/bundle-analyzer`
-
----
-
-## 🚀 Puesta en Marcha Rápida
-
-1. **Clonar repositorio**
-2. **Instalar dependencias:** `npm install`
-3. **Configurar `.env`** con todas las variables
-4. **Ejecutar:** `npm run dev`
-5. **Abrir:** http://localhost:3000
-6. **Inicializar DB:** Acceder como admin → Configuración → Inicializar Base de Datos
-
 ## 📞 Soporte
 
-Para soporte técnico o consultas sobre funcionalidades, contacta al equipo de desarrollo interno de Nubank.
+Para soporte técnico o reportar bugs:
+- **GitHub Issues:** [Crear issue](https://github.com/danfel552017/CalibraPro/issues)
+- **Email:** Contactar al administrador del sistema
+
+## 📋 Changelog
+
+### v1.0.0 (Actual)
+- ✅ Sistema de autenticación local con usuario/contraseña
+- ✅ Usuario administrador maestro configurado
+- ✅ Eliminación de dependencia de Google OAuth
+- ✅ Interfaz de login renovada
+- ✅ Versión de producción estable
+- ✅ Deploy automático en Vercel
+
+### Versiones Anteriores
+- v0.9.x: Versión beta con Google OAuth
+- v0.8.x: Funcionalidades core implementadas
+- v0.7.x: Prototipo inicial
 
 ---
 
-*CalibraPro v1.0 - Desarrollado para Nubank Quality Team*# 🌐 CalibraPro ya está desplegado en: https://calibrapro.vercel.app
+## 📄 Licencia
+
+Este proyecto es de uso interno. Todos los derechos reservados.
+
+---
+
+**CalibraPro v1.0** - Sistema de Gestión de Calibraciones de Calidad
+🚀 **Desplegado en:** [https://calibrapro.vercel.app](https://calibrapro.vercel.app)

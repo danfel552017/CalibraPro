@@ -6,8 +6,8 @@ import { Providers } from '@/components/providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'CalibraPro | Nubank Quality Management',
-  description: 'Plataforma interna para gestión de calibraciones de calidad - Nubank',
+  title: 'CalibraPro v1.0 | Quality Management System',
+  description: 'Plataforma para gestión de calibraciones de calidad - Versión Producción',
   icons: {
     icon: '/favicon.ico',
   },
