@@ -1,21 +1,17 @@
 {
   "env": {
-    "DEMO_MODE": "true",
-    "DEMO_USER_EMAIL": "demo@nubank.com.br",
-    "DEMO_USER_NAME": "Usuario Demo",
-    "NEXTAUTH_SECRET": "calibrapro-demo-secret-2024-nubank-quality-platform",
-    "GOOGLE_CLIENT_ID": "demo-client-id",
-    "GOOGLE_CLIENT_SECRET": "demo-client-secret",
-    "GOOGLE_SHEET_ID": "demo-sheet-id",
-    "GOOGLE_SERVICE_ACCOUNT_EMAIL": "demo@demo.iam.gserviceaccount.com",
-    "GOOGLE_PRIVATE_KEY": "demo-private-key",
-    "NUBANK_DOMAIN": "@nubank.com.br",
-    "ADMIN_EMAILS": "demo@nubank.com.br,admin@nubank.com.br"
+    "NEXTAUTH_SECRET": "calibrapro-production-secret-key-nubank-quality-team-2024-v1.0",
+    "GOOGLE_SHEET_ID": "tu-google-sheets-id",
+    "GOOGLE_SERVICE_ACCOUNT_EMAIL": "service-account@project.iam.gserviceaccount.com",
+    "GOOGLE_PRIVATE_KEY": "demo-private-key-for-sheets-api",
+    "APP_VERSION": "1.0.0",
+    "APP_MODE": "production"
   },
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30
     }
   },
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "buildCommand": "npm run build"
 }
