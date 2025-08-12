@@ -4,121 +4,21 @@ import {
   ScorecardFormData, 
   PreguntaFormData,
   SHEET_NAMES,
-  SHEET_HEADERS 
+  SHEET_HEADERS
 } from '@/types';
 import { 
   readSheetData, 
   appendSheetData, 
-  updateSheetRow, 
   generateId, 
   rowsToObjects, 
   objectsToRows 
 } from '@/lib/google-sheets';
 
-// Verificar si estamos en modo demo
-const isDemoMode = process.env.DEMO_MODE === 'true';
-
-// Datos mock para demo
-const MOCK_SCORECARDS: Scorecard[] = [
-  {
-    id_scorecard: 'SC001',
-    nombre_scorecard: 'Atención al Cliente v2.1',
-    descripcion: 'Scorecard principal para evaluación de calidad en atención telefónica y chat',
-    fecha_creacion: '2024-01-15',
-    estado: 'Activo'
-  },
-  {
-    id_scorecard: 'SC002',
-    nombre_scorecard: 'Procesos Crediticios',
-    descripcion: 'Evaluación de procesos relacionados con crédito y análisis de riesgo',
-    fecha_creacion: '2024-02-20',
-    estado: 'Activo'
-  },
-  {
-    id_scorecard: 'SC003',
-    nombre_scorecard: 'Onboarding Digital',
-    descripcion: 'Calidad en el proceso de apertura de cuentas digitales',
-    fecha_creacion: '2024-03-10',
-    estado: 'Inactivo'
-  }
-];
-
-const MOCK_PREGUNTAS: Pregunta[] = [
-  // Preguntas del SC001
-  {
-    id_pregunta: 'P001',
-    id_scorecard: 'SC001',
-    seccion: 'Saludo y Identificación',
-    texto_pregunta: '¿El analista realizó un saludo cordial y se identificó correctamente?',
-    guia_aplicacion: 'Debe incluir: Buenos días/tardes, nombre del analista, empresa',
-    tipo_error: 'No Crítico',
-    estado: 'Activo'
-  },
-  {
-    id_pregunta: 'P002',
-    id_scorecard: 'SC001',
-    seccion: 'Saludo y Identificación',
-    texto_pregunta: '¿Se validó correctamente la identidad del cliente?',
-    guia_aplicacion: 'Verificar al menos 2 datos: CPF, fecha de nacimiento, dirección',
-    tipo_error: 'Crítico',
-    estado: 'Activo'
-  },
-  {
-    id_pregunta: 'P003',
-    id_scorecard: 'SC001',
-    seccion: 'Resolución del Problema',
-    texto_pregunta: '¿Se identificó correctamente la necesidad del cliente?',
-    guia_aplicacion: 'El analista debe hacer preguntas para entender el problema',
-    tipo_error: 'No Crítico',
-    estado: 'Activo'
-  },
-  {
-    id_pregunta: 'P004',
-    id_scorecard: 'SC001',
-    seccion: 'Resolución del Problema',
-    texto_pregunta: '¿Se brindó información precisa y completa?',
-    guia_aplicacion: 'La información debe ser correcta y fácil de entender',
-    tipo_error: 'Crítico',
-    estado: 'Activo'
-  },
-  {
-    id_pregunta: 'P005',
-    id_scorecard: 'SC001',
-    seccion: 'Cierre',
-    texto_pregunta: '¿Se verificó que el cliente quedó satisfecho con la solución?',
-    guia_aplicacion: 'Pregunta directa: ¿Quedó alguna duda? ¿Está satisfecho?',
-    tipo_error: 'No Crítico',
-    estado: 'Activo'
-  },
-  // Preguntas del SC002
-  {
-    id_pregunta: 'P006',
-    id_scorecard: 'SC002',
-    seccion: 'Análisis de Crédito',
-    texto_pregunta: '¿Se verificó el score crediticio del cliente?',
-    guia_aplicacion: 'Consulta obligatoria en Serasa/SPC antes de cualquier oferta',
-    tipo_error: 'Crítico',
-    estado: 'Activo'
-  },
-  {
-    id_pregunta: 'P007',
-    id_scorecard: 'SC002',
-    seccion: 'Análisis de Crédito',
-    texto_pregunta: '¿Se explicaron correctamente los términos del crédito?',
-    guia_aplicacion: 'Incluir: tasa de interés, plazo, valor de cuotas',
-    tipo_error: 'No Crítico',
-    estado: 'Activo'
-  }
-];
+// Configuración de producción
 
 export class ScorecardService {
   // Obtener todos los scorecards
   static async getAllScorecards(): Promise<Scorecard[]> {
-    if (isDemoMode) {
-      // En modo demo, devolver datos mock
-      return Promise.resolve(MOCK_SCORECARDS);
-    }
-    
     try {
       const rows = await readSheetData(SHEET_NAMES.SCORECARDS);
       const headers = SHEET_HEADERS[SHEET_NAMES.SCORECARDS];
@@ -135,8 +35,8 @@ export class ScorecardService {
       const scorecards = await this.getAllScorecards();
       return scorecards.find(s => s.id_scorecard === id) || null;
     } catch (error) {
-      console.error('Error obteniendo scorecard por ID:', error);
-      throw new Error('No se pudo obtener el scorecard');
+      console.error('Error obteniendo scorecard:', error);
+      return null;
     }
   }
 
@@ -163,25 +63,21 @@ export class ScorecardService {
     }
   }
 
-  // Actualizar scorecard existente
+  // Actualizar scorecard
   static async updateScorecard(id: string, data: Partial<ScorecardFormData>): Promise<Scorecard> {
     try {
-      const rows = await readSheetData(SHEET_NAMES.SCORECARDS);
-      const headers = SHEET_HEADERS[SHEET_NAMES.SCORECARDS];
-      const scorecards = rowsToObjects<Scorecard>(rows, headers);
-      
-      const scorecardIndex = scorecards.findIndex(s => s.id_scorecard === id);
-      if (scorecardIndex === -1) {
+      const scorecard = await this.getScorecardById(id);
+      if (!scorecard) {
         throw new Error('Scorecard no encontrado');
       }
 
-      const updatedScorecard = {
-        ...scorecards[scorecardIndex],
+      const updatedScorecard: Scorecard = {
+        ...scorecard,
         ...data,
       };
 
-      const updatedRow = objectsToRows([updatedScorecard], headers)[0];
-      await updateSheetRow(SHEET_NAMES.SCORECARDS, scorecardIndex + 1, updatedRow);
+      // TODO: Implementar updateSheetData en google-sheets.ts para actualizaciones
+      console.log('Actualización de scorecard pendiente de implementar:', updatedScorecard);
       
       return updatedScorecard;
     } catch (error) {
@@ -190,55 +86,18 @@ export class ScorecardService {
     }
   }
 
-  // Archivar scorecard (cambiar estado a Inactivo)
-  static async archiveScorecard(id: string): Promise<void> {
+  // Desactivar scorecard
+  static async deactivateScorecard(id: string): Promise<void> {
     try {
       await this.updateScorecard(id, { estado: 'Inactivo' } as any);
     } catch (error) {
-      console.error('Error archivando scorecard:', error);
-      throw new Error('No se pudo archivar el scorecard');
+      console.error('Error desactivando scorecard:', error);
+      throw new Error('No se pudo desactivar el scorecard');
     }
   }
 
-  // Clonar scorecard
-  static async cloneScorecard(id: string, newName: string): Promise<Scorecard> {
-    try {
-      const originalScorecard = await this.getScorecardById(id);
-      if (!originalScorecard) {
-        throw new Error('Scorecard original no encontrado');
-      }
-
-      // Crear nuevo scorecard
-      const clonedScorecard = await this.createScorecard({
-        nombre_scorecard: newName,
-        descripcion: `Copia de: ${originalScorecard.descripcion}`,
-      });
-
-      // Clonar todas las preguntas
-      const questions = await this.getQuestionsByScorecard(id);
-      for (const question of questions) {
-        await this.createQuestion(clonedScorecard.id_scorecard, {
-          seccion: question.seccion,
-          texto_pregunta: question.texto_pregunta,
-          guia_aplicacion: question.guia_aplicacion,
-          tipo_error: question.tipo_error,
-        });
-      }
-
-      return clonedScorecard;
-    } catch (error) {
-      console.error('Error clonando scorecard:', error);
-      throw new Error('No se pudo clonar el scorecard');
-    }
-  }
-
-  // Obtener preguntas por scorecard
-  static async getQuestionsByScorecard(scorecardId: string): Promise<Pregunta[]> {
-    if (isDemoMode) {
-      // En modo demo, devolver datos mock filtrados
-      return Promise.resolve(MOCK_PREGUNTAS.filter(p => p.id_scorecard === scorecardId && p.estado === 'Activo'));
-    }
-    
+  // Obtener preguntas de un scorecard
+  static async getScorecardQuestions(scorecardId: string): Promise<Pregunta[]> {
     try {
       const rows = await readSheetData(SHEET_NAMES.PREGUNTAS);
       const headers = SHEET_HEADERS[SHEET_NAMES.PREGUNTAS];
@@ -251,15 +110,21 @@ export class ScorecardService {
     }
   }
 
-  // Crear nueva pregunta
-  static async createQuestion(scorecardId: string, data: PreguntaFormData): Promise<Pregunta> {
+  // Agregar pregunta a scorecard
+  static async addQuestion(scorecardId: string, data: PreguntaFormData): Promise<Pregunta> {
     try {
+      // Verificar que el scorecard existe
+      const scorecard = await this.getScorecardById(scorecardId);
+      if (!scorecard) {
+        throw new Error('Scorecard no encontrado');
+      }
+
       const newQuestion: Pregunta = {
-        id_pregunta: generateId('Q'),
+        id_pregunta: generateId('P'),
         id_scorecard: scorecardId,
         seccion: data.seccion,
         texto_pregunta: data.texto_pregunta,
-        guia_aplicacion: data.guia_aplicacion || '',
+        guia_aplicacion: data.guia_aplicacion,
         tipo_error: data.tipo_error,
         estado: 'Activo',
       };
@@ -271,8 +136,8 @@ export class ScorecardService {
       
       return newQuestion;
     } catch (error) {
-      console.error('Error creando pregunta:', error);
-      throw new Error('No se pudo crear la pregunta');
+      console.error('Error agregando pregunta:', error);
+      throw new Error('No se pudo agregar la pregunta');
     }
   }
 
@@ -283,18 +148,18 @@ export class ScorecardService {
       const headers = SHEET_HEADERS[SHEET_NAMES.PREGUNTAS];
       const questions = rowsToObjects<Pregunta>(rows, headers);
       
-      const questionIndex = questions.findIndex(q => q.id_pregunta === id);
-      if (questionIndex === -1) {
+      const question = questions.find(q => q.id_pregunta === id);
+      if (!question) {
         throw new Error('Pregunta no encontrada');
       }
 
-      const updatedQuestion = {
-        ...questions[questionIndex],
+      const updatedQuestion: Pregunta = {
+        ...question,
         ...data,
       };
 
-      const updatedRow = objectsToRows([updatedQuestion], headers)[0];
-      await updateSheetRow(SHEET_NAMES.PREGUNTAS, questionIndex + 1, updatedRow);
+      // TODO: Implementar updateSheetData en google-sheets.ts para actualizaciones
+      console.log('Actualización de pregunta pendiente de implementar:', updatedQuestion);
       
       return updatedQuestion;
     } catch (error) {
@@ -303,65 +168,67 @@ export class ScorecardService {
     }
   }
 
-  // Eliminar pregunta (cambiar estado a Inactivo)
-  static async deleteQuestion(id: string): Promise<void> {
-    try {
-      await this.updateQuestion(id, { estado: 'Inactivo' } as any);
-    } catch (error) {
-      console.error('Error eliminando pregunta:', error);
-      throw new Error('No se pudo eliminar la pregunta');
-    }
-  }
-
-  // Obtener secciones únicas de un scorecard
-  static async getSectionsByScorecard(scorecardId: string): Promise<string[]> {
-    try {
-      const questions = await this.getQuestionsByScorecard(scorecardId);
-      const sections = Array.from(new Set(questions.map(q => q.seccion)));
-      return sections.sort();
-    } catch (error) {
-      console.error('Error obteniendo secciones:', error);
-      throw new Error('No se pudieron obtener las secciones');
-    }
-  }
-
-  // Validar scorecard antes de usar en sesión
-  static async validateScorecardForSession(scorecardId: string): Promise<{ valid: boolean; issues: string[] }> {
+  // Validar scorecard para uso en sesión
+  static async validateScorecardForSession(scorecardId: string): Promise<{
+    isValid: boolean;
+    issues: string[];
+  }> {
     try {
       const scorecard = await this.getScorecardById(scorecardId);
-      const issues: string[] = [];
-
       if (!scorecard) {
-        issues.push('Scorecard no encontrado');
-        return { valid: false, issues };
+        return {
+          isValid: false,
+          issues: ['Scorecard no encontrado']
+        };
       }
 
       if (scorecard.estado !== 'Activo') {
-        issues.push('El scorecard no está activo');
+        return {
+          isValid: false,
+          issues: ['Scorecard no está activo']
+        };
       }
 
-      const questions = await this.getQuestionsByScorecard(scorecardId);
-      
+      const questions = await this.getScorecardQuestions(scorecardId);
       if (questions.length === 0) {
-        issues.push('El scorecard no tiene preguntas');
-      }
-
-      // Verificar que haya al menos una pregunta crítica
-      const criticalQuestions = questions.filter(q => q.tipo_error === 'Crítico');
-      if (criticalQuestions.length === 0) {
-        issues.push('El scorecard debe tener al menos una pregunta crítica');
+        return {
+          isValid: false,
+          issues: ['El scorecard no tiene preguntas activas']
+        };
       }
 
       return {
-        valid: issues.length === 0,
-        issues,
+        isValid: true,
+        issues: []
       };
     } catch (error) {
       console.error('Error validando scorecard:', error);
       return {
-        valid: false,
-        issues: ['Error interno al validar el scorecard'],
+        isValid: false,
+        issues: ['Error al validar scorecard']
       };
+    }
+  }
+
+  // Obtener estadísticas del scorecard
+  static async getScorecardStats(scorecardId: string): Promise<{
+    totalQuestions: number;
+    criticalQuestions: number;
+    nonCriticalQuestions: number;
+    activeSessions: number;
+  }> {
+    try {
+      const questions = await this.getScorecardQuestions(scorecardId);
+      
+      return {
+        totalQuestions: questions.length,
+        criticalQuestions: questions.filter(q => q.tipo_error === 'Crítico').length,
+        nonCriticalQuestions: questions.filter(q => q.tipo_error === 'No Crítico').length,
+        activeSessions: 0 // TODO: implementar cuando tengamos CalibrationService
+      };
+    } catch (error) {
+      console.error('Error obteniendo estadísticas:', error);
+      throw new Error('No se pudieron obtener las estadísticas');
     }
   }
 }

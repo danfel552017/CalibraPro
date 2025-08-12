@@ -24,84 +24,7 @@ import {
 } from '@/lib/kappa-calculator';
 import { ScorecardService } from './scorecard-service';
 
-// Verificar si estamos en modo demo
-const isDemoMode = process.env.DEMO_MODE === 'true';
-
-// Datos mock para demo
-const MOCK_SESSIONS: SesionCalibracion[] = [
-  {
-    id_sesion: 'SES001',
-    fecha: '2024-12-14',
-    lider_sesion: 'demo@nubank.com.br',
-    id_scorecard_usado: 'SC001',
-    id_interaccion_evaluada: 'INT-20241214-001',
-    participantes: 'ana.silva@nubank.com.br,carlos.santos@nubank.com.br,maria.lopez@nubank.com.br',
-    kappa_score: 0.75,
-    estado: 'Finalizada'
-  },
-  {
-    id_sesion: 'SES002',
-    fecha: '2024-12-10',
-    lider_sesion: 'demo@nubank.com.br',
-    id_scorecard_usado: 'SC001',
-    id_interaccion_evaluada: 'INT-20241210-001',
-    participantes: 'ana.silva@nubank.com.br,carlos.santos@nubank.com.br',
-    kappa_score: 0.82,
-    estado: 'Finalizada'
-  }
-];
-
-const MOCK_RESULTS: ResultadoDetallado[] = [
-  // Resultados de SES001
-  {
-    id_resultado: 'R001',
-    id_sesion: 'SES001',
-    email_analista: 'ana.silva@nubank.com.br',
-    id_pregunta: 'P001',
-    calificacion: 1,
-    timestamp: '2024-12-14T09:30:00Z'
-  },
-  {
-    id_resultado: 'R002',
-    id_sesion: 'SES001',
-    email_analista: 'carlos.santos@nubank.com.br',
-    id_pregunta: 'P001',
-    calificacion: 1,
-    timestamp: '2024-12-14T09:32:00Z'
-  },
-  {
-    id_resultado: 'R003',
-    id_sesion: 'SES001',
-    email_analista: 'maria.lopez@nubank.com.br',
-    id_pregunta: 'P001',
-    calificacion: 0,
-    timestamp: '2024-12-14T09:35:00Z'
-  },
-  {
-    id_resultado: 'R004',
-    id_sesion: 'SES001',
-    email_analista: 'ana.silva@nubank.com.br',
-    id_pregunta: 'P002',
-    calificacion: 1,
-    timestamp: '2024-12-14T09:30:00Z'
-  },
-  {
-    id_resultado: 'R005',
-    id_sesion: 'SES001',
-    email_analista: 'carlos.santos@nubank.com.br',
-    id_pregunta: 'P002',
-    calificacion: 1,
-    timestamp: '2024-12-14T09:32:00Z'
-  },
-  {
-    id_resultado: 'R006',
-    id_sesion: 'SES001',
-    email_analista: 'maria.lopez@nubank.com.br',
-    id_pregunta: 'P002',
-    calificacion: 1,
-    timestamp: '2024-12-14T09:35:00Z'
-  }
-];
+// Configuración de producción
 
 export class CalibrationService {
   // Crear nueva sesión de calibración
@@ -109,7 +32,7 @@ export class CalibrationService {
     try {
       // Validar scorecard antes de crear sesión
       const validation = await ScorecardService.validateScorecardForSession(data.id_scorecard_usado);
-      if (!validation.valid) {
+      if (!validation.isValid) {
         throw new Error(`Scorecard inválido: ${validation.issues.join(', ')}`);
       }
 
@@ -137,11 +60,6 @@ export class CalibrationService {
 
   // Obtener todas las sesiones
   static async getAllSessions(): Promise<SesionCalibracion[]> {
-    if (isDemoMode) {
-      // En modo demo, devolver datos mock
-      return Promise.resolve(MOCK_SESSIONS);
-    }
-    
     try {
       const rows = await readSheetData(SHEET_NAMES.SESIONES);
       const headers = SHEET_HEADERS[SHEET_NAMES.SESIONES];
@@ -172,7 +90,7 @@ export class CalibrationService {
       const scorecard = await ScorecardService.getScorecardById(session.id_scorecard_usado);
       if (!scorecard) throw new Error('Scorecard no encontrado');
 
-      const questions = await ScorecardService.getQuestionsByScorecard(session.id_scorecard_usado);
+      const questions = await ScorecardService.getScorecardQuestions(session.id_scorecard_usado);
       const results = await this.getSessionResults(id);
       const participants = JSON.parse(session.participantes);
 
@@ -245,7 +163,7 @@ export class CalibrationService {
       const discrepancies = calculateDiscrepancies(results);
       
       // Obtener texto de preguntas
-      const questions = await ScorecardService.getQuestionsByScorecard(session.id_scorecard_usado);
+      const questions = await ScorecardService.getScorecardQuestions(session.id_scorecard_usado);
       const enrichedDiscrepancies = discrepancies.map(disc => {
         const question = questions.find(q => q.id_pregunta === disc.question_id);
         return {
@@ -328,11 +246,6 @@ export class CalibrationService {
 
   // Obtener resultados de una sesión
   static async getSessionResults(sessionId: string): Promise<ResultadoDetallado[]> {
-    if (isDemoMode) {
-      // En modo demo, devolver datos mock filtrados
-      return Promise.resolve(MOCK_RESULTS.filter(r => r.id_sesion === sessionId));
-    }
-    
     try {
       const rows = await readSheetData(SHEET_NAMES.RESULTADOS);
       const headers = SHEET_HEADERS[SHEET_NAMES.RESULTADOS];
@@ -369,7 +282,7 @@ export class CalibrationService {
         throw new Error('No hay resultados para este analista');
       }
 
-      const questions = await ScorecardService.getQuestionsByScorecard(session.id_scorecard_usado);
+      const questions = await ScorecardService.getScorecardQuestions(session.id_scorecard_usado);
       
       return calculateCOPCScore(analystResults, questions);
     } catch (error) {
